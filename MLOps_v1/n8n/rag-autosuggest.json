@@ -1,0 +1,159 @@
+{
+  "name": "RAG Autosuggest System",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "autosuggest",
+        "httpMethod": "GET",
+        "responseMode": "responseNode"
+      },
+      "id": "Webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8000/search?q={{$json[\"query\"][\"q\"]}}",
+        "options": {}
+      },
+      "id": "RetrieverAPI",
+      "name": "RAG Retriever",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "query",
+              "value": "={{$node[\"Webhook Trigger\"].json[\"query\"][\"q\"]}}"
+            },
+            {
+              "name": "context",
+              "value": "={{$json[\"results\"].join(\"\\n\")}}"
+            }
+          ]
+        }
+      },
+      "id": "SetNode",
+      "name": "Prepare Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [600, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"model\": \"text-davinci-003\",\n  \"prompt\": \"You are a smart autosuggest system.\\n\\nUser query: {{$json[\"query\"]}}\\n\\nContext:\\n{{$json[\"context\"]}}\\n\\nGenerate 5 short autocomplete suggestions.\",\n  \"max_tokens\": 100\n}"
+      },
+      "id": "LLMNode",
+      "name": "LLM Suggestion Generator",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [800, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "OpenAI Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "suggestions",
+              "value": "={{$json[\"choices\"][0][\"text\"]}}"
+            }
+          ]
+        }
+      },
+      "id": "FormatResponse",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "responseBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "Respond",
+      "name": "Respond to User",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1200, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "RAG Retriever",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG Retriever": {
+      "main": [
+        [
+          {
+            "node": "Prepare Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Context": {
+      "main": [
+        [
+          {
+            "node": "LLM Suggestion Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Suggestion Generator": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Output": {
+      "main": [
+        [
+          {
+            "node": "Respond to User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

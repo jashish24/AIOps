@@ -17,12 +17,12 @@ mlflow.db
 *.pkl
 
 # CatBoost
-MLOps/src/catboost_info/
+MLOps_v1/src/catboost_info/
 
 # n8n data volumes
-MLOps/n8n/caddy_config/
-MLOps/n8n/caddy_data/
-MLOps/n8n/n8n_data/
+MLOps_v1/n8n/caddy_config/
+MLOps_v1/n8n/caddy_data/
+MLOps_v1/n8n/n8n_data/
 
 # Media / binary files in codes/
 codes/*.gif
