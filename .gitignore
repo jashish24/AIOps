@@ -1,0 +1,40 @@
+# Virtual environments
+MLOps/mlflow-pipeline/
+venv/
+env/
+.venv/
+
+# MLflow
+mlruns/
+mlflow.db
+*.db
+
+# DVC cache
+.dvc/cache/
+.dvc/tmp/
+
+# ML artifacts (tracked via DVC)
+*.pkl
+
+# CatBoost
+MLOps/src/catboost_info/
+
+# n8n data volumes
+MLOps/n8n/caddy_config/
+MLOps/n8n/caddy_data/
+MLOps/n8n/n8n_data/
+
+# Media / binary files in codes/
+codes/*.gif
+codes/*.pdf
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Misc
+.env
+.DS_Store
+*.log
+*.tmp
